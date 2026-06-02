@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="coralMark" gradientUnits="userSpaceOnUse" x1="256" y1="112" x2="256" y2="432">
+      <stop offset="0" stop-color="#FF8273"/>
+      <stop offset="1" stop-color="#F0543D"/>
+    </linearGradient>
+  </defs>
+
+  <!-- transparent-background mark for in-app header / splash -->
+  <path d="M256 112
+           C 194.08 112, 144 162.08, 144 224
+           C 144 308, 256 432, 256 432
+           C 256 432, 368 308, 368 224
+           C 368 162.08, 317.92 112, 256 112 Z"
+        fill="url(#coralMark)"/>
+  <circle cx="252" cy="222" r="64" fill="#FFFFFF"/>
+  <circle cx="292" cy="196" r="56" fill="url(#coralMark)"/>
+</svg>
