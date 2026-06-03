@@ -40,6 +40,10 @@ export default function AddPlaceScreen({ navigation, route }) {
   );
   const [category, setCategory] = useState(editingPlace?.category || 'other');
   const [rating, setRating] = useState(editingPlace?.rating || 0);
+  const [tags, setTags] = useState(
+    Array.isArray(editingPlace?.tags) ? editingPlace.tags : []
+  );
+  const [tagInput, setTagInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [locationName, setLocationName] = useState(
     editingPlace?.locationName || null
@@ -108,6 +112,19 @@ export default function AddPlaceScreen({ navigation, route }) {
     setPhotoUris((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const addTag = () => {
+    const raw = tagInput.trim().replace(/^#+/, '').slice(0, 24);
+    if (!raw) return;
+    setTags((prev) =>
+      prev.some((t) => t.toLowerCase() === raw.toLowerCase()) ? prev : [...prev, raw]
+    );
+    setTagInput('');
+  };
+
+  const removeTag = (tag) => {
+    setTags((prev) => prev.filter((t) => t !== tag));
+  };
+
   const movePhoto = (from, to) => {
     setPhotoUris((prev) => {
       const arr = [...prev];
@@ -154,6 +171,7 @@ export default function AddPlaceScreen({ navigation, route }) {
           photoUri: photoUris[0] || null,
           locationName,
           category,
+          tags,
           rating,
         });
       } else {
@@ -165,6 +183,7 @@ export default function AddPlaceScreen({ navigation, route }) {
           longitude,
           locationName,
           category,
+          tags,
           rating,
         });
       }
@@ -299,6 +318,44 @@ export default function AddPlaceScreen({ navigation, route }) {
             </Text>
           )}
         </View>
+
+        {/* Tags */}
+        <Text style={styles.label}>TAGS</Text>
+        <View style={styles.tagInputRow}>
+          <Ionicons name="pricetag-outline" size={16} color={colors.muted} />
+          <TextInput
+            style={styles.tagInput}
+            placeholder="Add a tag (e.g. sunset) and press +"
+            placeholderTextColor={colors.muted}
+            value={tagInput}
+            onChangeText={setTagInput}
+            onSubmitEditing={addTag}
+            returnKeyType="done"
+            autoCapitalize="none"
+            autoCorrect={false}
+            maxLength={24}
+          />
+          {tagInput.trim().length > 0 && (
+            <TouchableOpacity onPress={addTag} hitSlop={6}>
+              <Ionicons name="add-circle" size={24} color={colors.accent} />
+            </TouchableOpacity>
+          )}
+        </View>
+        {tags.length > 0 && (
+          <View style={styles.tagWrap}>
+            {tags.map((t) => (
+              <TouchableOpacity
+                key={t}
+                style={styles.tagChip}
+                onPress={() => removeTag(t)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.tagChipText}>#{t}</Text>
+                <Ionicons name="close" size={13} color={colors.accentDark} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         {/* Location (read-only): resolved name + coordinates */}
         <Text style={styles.label}>LOCATION</Text>
@@ -444,6 +501,36 @@ const makeStyles = (colors) => {
     marginBottom: spacing.md,
   },
   ratingClear: { fontSize: 13, fontWeight: '600', color: colors.subtext },
+
+  tagInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.md,
+    height: 48,
+    marginBottom: spacing.sm,
+  },
+  tagInput: { flex: 1, fontSize: 16, color: colors.text, paddingVertical: 0 },
+  tagWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  tagChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.accentSoft,
+    borderRadius: radius.pill,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  tagChipText: { fontSize: 13, fontWeight: '700', color: colors.accentDark },
 
   coordTextWrap: { flex: 1 },
   coordName: { fontSize: 15, fontWeight: '700', color: colors.accentDark },

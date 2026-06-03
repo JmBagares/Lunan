@@ -1,7 +1,9 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Alert,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -15,6 +17,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { getPlaces, getPhotos } from '../utils/storage';
 import { getCategory } from '../categories';
 import { buildCollections } from '../collections';
+import {
+  areRemindersEnabled,
+  disableReminders,
+  enableReminders,
+} from '../utils/notifications';
 import { makeTypography, radius, shadow, spacing } from '../theme';
 import { useTheme } from '../theme-context';
 
@@ -187,6 +194,30 @@ export default function HomeScreen({ navigation }) {
     () => buildCollections(places, userLoc),
     [places, userLoc]
   );
+
+  const [remindersOn, setRemindersOn] = useState(false);
+
+  useEffect(() => {
+    areRemindersEnabled().then(setRemindersOn);
+  }, []);
+
+  const toggleReminders = async (next) => {
+    if (next) {
+      const ok = await enableReminders();
+      if (!ok) {
+        Alert.alert(
+          'Notifications are off',
+          'Enable notifications for Lunan in your device Settings to get weekly revisit reminders.'
+        );
+        setRemindersOn(false);
+        return;
+      }
+      setRemindersOn(true);
+    } else {
+      await disableReminders();
+      setRemindersOn(false);
+    }
+  };
 
   const openCollection = (c) => {
     navigation.navigate('My Places', {
@@ -362,6 +393,25 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
+      {/* Revisit reminders */}
+      <View style={styles.reminderCard}>
+        <View style={styles.reminderIcon}>
+          <Ionicons name="notifications-outline" size={18} color={colors.accent} />
+        </View>
+        <View style={styles.reminderText}>
+          <Text style={styles.reminderTitle}>Revisit reminders</Text>
+          <Text style={styles.reminderSub}>
+            A weekly nudge to look back on your places
+          </Text>
+        </View>
+        <Switch
+          value={remindersOn}
+          onValueChange={toggleReminders}
+          trackColor={{ true: colors.accent, false: colors.border }}
+          thumbColor={colors.white}
+        />
+      </View>
+
       {/* How it works */}
       <Text style={styles.sectionTitle}>How it works</Text>
       {STEPS.map((step, index) => (
@@ -531,6 +581,28 @@ const makeStyles = (colors) => {
       backgroundColor: colors.border,
       marginLeft: spacing.lg + 36 + spacing.md,
     },
+
+    reminderCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      backgroundColor: colors.card,
+      borderRadius: radius.lg,
+      padding: spacing.md,
+      marginTop: spacing.lg,
+      ...shadow.card,
+    },
+    reminderIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.accentSoft,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    reminderText: { flex: 1 },
+    reminderTitle: { fontSize: 15, fontWeight: '700', color: colors.text },
+    reminderSub: { fontSize: 12, color: colors.subtext, marginTop: 1 },
 
     step: {
       flexDirection: 'row',
