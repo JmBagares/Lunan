@@ -155,6 +155,7 @@ export default function MapScreen({ navigation }) {
         userLocation={location}
         markers={markers}
         baseLayer={baseLayer}
+        topInset={insets.top + 56}
         onLongPress={handleMapLongPress}
       />
 
@@ -202,10 +203,12 @@ export default function MapScreen({ navigation }) {
         </TouchableOpacity>
       )}
 
-      {/* Hint: long-press to drop a pin anywhere */}
-      <View style={styles.hint} pointerEvents="none">
-        <Ionicons name="hand-left-outline" size={13} color={colors.subtext} />
-        <Text style={styles.hintText}>Hold the map to add a place here</Text>
+      {/* Hint: long-press to drop a pin anywhere (centered just above the FAB) */}
+      <View style={styles.hintWrap} pointerEvents="none">
+        <View style={styles.hint}>
+          <Ionicons name="hand-left-outline" size={13} color={colors.subtext} />
+          <Text style={styles.hintText}>Hold the map to add a place here</Text>
+        </View>
       </View>
 
       {/* Recenter button (only useful when we have a fix) */}
@@ -311,10 +314,14 @@ const makeStyles = (colors) =>
     ...shadow.card,
   },
   layersLabel: { fontSize: 13, fontWeight: '700', color: colors.text },
-  hint: {
+  hintWrap: {
     position: 'absolute',
-    left: spacing.lg,
-    bottom: spacing.xl + 6,
+    left: 0,
+    right: 0,
+    bottom: spacing.xl + 70,
+    alignItems: 'center',
+  },
+  hint: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,

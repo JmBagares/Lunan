@@ -22,6 +22,7 @@ import { Ionicons } from '@expo/vector-icons';
 import LeafletMap from '../components/LeafletMap';
 import CategoryBadge from '../components/CategoryBadge';
 import StarRating from '../components/StarRating';
+import PhotoViewer from '../components/PhotoViewer';
 import { deletePlace, getPlaces, getPhotos, updatePlace } from '../utils/storage';
 import { getLocationName } from '../utils/geocode';
 import { getCategory } from '../categories';
@@ -49,9 +50,16 @@ export default function PlaceDetailScreen({ navigation, route }) {
   const [place, setPlace] = useState(route.params.place);
   const [resolvedName, setResolvedName] = useState(null);
   const [activePhoto, setActivePhoto] = useState(0);
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
 
   const photos = getPhotos(place);
   const photoWidth = width - spacing.lg * 2;
+
+  const openViewer = (i) => {
+    setViewerIndex(i);
+    setViewerVisible(true);
+  };
 
   // Reload this place from storage whenever the screen regains focus, so edits
   // made on the Edit screen are reflected here. If it was deleted, go back.
@@ -153,6 +161,7 @@ export default function PlaceDetailScreen({ navigation, route }) {
   }, [navigation, place]);
 
   return (
+    <>
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
@@ -171,12 +180,17 @@ export default function PlaceDetailScreen({ navigation, route }) {
             }
           >
             {photos.map((uri, i) => (
-              <Image
+              <TouchableOpacity
                 key={`${uri}-${i}`}
-                source={{ uri }}
-                style={[styles.photo, { width: photoWidth }]}
-                contentFit="cover"
-              />
+                activeOpacity={0.95}
+                onPress={() => openViewer(i)}
+              >
+                <Image
+                  source={{ uri }}
+                  style={[styles.photo, { width: photoWidth }]}
+                  contentFit="cover"
+                />
+              </TouchableOpacity>
             ))}
           </ScrollView>
           {photos.length > 1 && (
@@ -261,6 +275,14 @@ export default function PlaceDetailScreen({ navigation, route }) {
         <Text style={styles.deleteText}>Delete Place</Text>
       </TouchableOpacity>
     </ScrollView>
+
+      <PhotoViewer
+        visible={viewerVisible}
+        photos={photos}
+        initialIndex={viewerIndex}
+        onClose={() => setViewerVisible(false)}
+      />
+    </>
   );
 }
 
