@@ -46,6 +46,7 @@ export async function savePlace(input) {
     longitude: input.longitude,
     locationName: input.locationName || null,
     category: input.category || 'other',
+    tags: Array.isArray(input.tags) ? input.tags : [],
     favorite: input.favorite || false,
     rating: input.rating || 0,
     createdAt: input.createdAt || new Date().toISOString(),
