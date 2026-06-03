@@ -7,6 +7,7 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 
 import SplashIntro from './components/SplashIntro';
@@ -15,6 +16,7 @@ import MapScreen from './screens/MapScreen';
 import AddPlaceScreen from './screens/AddPlaceScreen';
 import PlacesListScreen from './screens/PlacesListScreen';
 import PlaceDetailScreen from './screens/PlaceDetailScreen';
+import CollectionScreen from './screens/CollectionScreen';
 import { ThemeProvider, useTheme } from './theme-context';
 
 const Tab = createBottomTabNavigator();
@@ -56,6 +58,11 @@ function PlacesStackScreen() {
         name="PlacesList"
         component={PlacesListScreen}
         options={{ title: 'My Places' }}
+      />
+      <PlacesStack.Screen
+        name="Collection"
+        component={CollectionScreen}
+        options={{ title: 'Collection' }}
       />
       <PlacesStack.Screen
         name="PlaceDetail"
@@ -151,10 +158,12 @@ function Root() {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <Root />
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <Root />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

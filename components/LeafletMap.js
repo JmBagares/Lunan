@@ -45,6 +45,8 @@ const MAP_HTML = `<!DOCTYPE html>
       border: 2px solid #fff; border-radius: 50%;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
+    /* Push Leaflet's top controls (zoom +/-) below the app's category chips. */
+    .leaflet-top { top: var(--top-inset, 0px); }
     .leaflet-popup-content { font-family: -apple-system, Roboto, sans-serif; margin: 10px 12px; }
     .popup-img { width: 200px; height: 110px; object-fit: cover; border-radius: 8px; display: block; margin-bottom: 6px; }
     .popup-title { font-weight: 700; font-size: 14px; color: ${colors.text}; }
@@ -126,6 +128,9 @@ const MAP_HTML = `<!DOCTYPE html>
     function setData(data) {
       ensureMap(data.interactive !== false);
       setBaseLayer(data.baseLayer || 'street');
+      if (typeof data.topInset === 'number') {
+        document.documentElement.style.setProperty('--top-inset', data.topInset + 'px');
+      }
       map.setView([data.center.latitude, data.center.longitude], data.zoom || 15);
       markerLayer.clearLayers();
 
@@ -178,6 +183,7 @@ const LeafletMap = forwardRef(function LeafletMap(
     markers = [],
     interactive = true,
     baseLayer = 'street',
+    topInset = 0,
     onMarkerPress,
     onLongPress,
   },
@@ -194,6 +200,7 @@ const LeafletMap = forwardRef(function LeafletMap(
       userLocation,
       interactive,
       baseLayer,
+      topInset,
       markers: markers.map((m) => ({
         id: m.id,
         title: m.title,
@@ -205,7 +212,7 @@ const LeafletMap = forwardRef(function LeafletMap(
       })),
     });
     webRef.current.injectJavaScript(`window.setData(${payload}); true;`);
-  }, [center, zoom, userLocation, interactive, baseLayer, markers]);
+  }, [center, zoom, userLocation, interactive, baseLayer, topInset, markers]);
 
   // Re-send data whenever the inputs change (only after the page is ready).
   useEffect(() => {
