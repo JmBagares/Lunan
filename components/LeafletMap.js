@@ -56,7 +56,7 @@ const MAP_HTML = `<!DOCTYPE html>
 <body>
   <div id="map"></div>
   <script>
-    var map, markerLayer, userMarker;
+    var map, markerLayer, userMarker, routeLine;
     var userIcon = L.divIcon({ className: '', html: '<div class="user-dot"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
     function makePin(color) {
       return L.divIcon({
@@ -134,6 +134,15 @@ const MAP_HTML = `<!DOCTYPE html>
       map.setView([data.center.latitude, data.center.longitude], data.zoom || 15);
       markerLayer.clearLayers();
 
+      if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
+      if (data.route && data.route.length >= 2) {
+        var latlngs = data.route.map(function (p) { return [p.latitude, p.longitude]; });
+        routeLine = L.polyline(latlngs, {
+          color: '${colors.accent}', weight: 3.5, opacity: 0.85,
+          dashArray: '6,10', lineCap: 'round', lineJoin: 'round'
+        }).addTo(map);
+      }
+
       if (userMarker) { map.removeLayer(userMarker); userMarker = null; }
       if (data.userLocation) {
         userMarker = L.marker([data.userLocation.latitude, data.userLocation.longitude], { icon: userIcon })
@@ -184,6 +193,7 @@ const LeafletMap = forwardRef(function LeafletMap(
     interactive = true,
     baseLayer = 'street',
     topInset = 0,
+    routeCoords = [],
     onMarkerPress,
     onLongPress,
   },
@@ -201,6 +211,7 @@ const LeafletMap = forwardRef(function LeafletMap(
       interactive,
       baseLayer,
       topInset,
+      route: routeCoords,
       markers: markers.map((m) => ({
         id: m.id,
         title: m.title,
@@ -212,7 +223,7 @@ const LeafletMap = forwardRef(function LeafletMap(
       })),
     });
     webRef.current.injectJavaScript(`window.setData(${payload}); true;`);
-  }, [center, zoom, userLocation, interactive, baseLayer, topInset, markers]);
+  }, [center, zoom, userLocation, interactive, baseLayer, topInset, routeCoords, markers]);
 
   // Re-send data whenever the inputs change (only after the page is ready).
   useEffect(() => {

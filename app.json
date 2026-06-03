@@ -53,6 +53,12 @@
           "photosPermission": "Allow Lunan to access your photos so you can attach one to a place.",
           "cameraPermission": "Allow Lunan to use your camera so you can snap a photo for a place."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#FF6F61"
+        }
       ]
     ],
     "extra": {
