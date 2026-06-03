@@ -1,8 +1,15 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
   FlatList,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -34,7 +41,7 @@ function EmptyState() {
   );
 }
 
-export default function PlacesListScreen({ navigation }) {
+export default function PlacesListScreen({ navigation, route }) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [places, setPlaces] = useState([]);
@@ -42,6 +49,12 @@ export default function PlacesListScreen({ navigation }) {
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [sort, setSort] = useState('recent'); // 'recent' | 'nearest'
   const [userLoc, setUserLoc] = useState(null);
+  const [query, setQuery] = useState('');
+
+  // Allow other screens (e.g. tapping a tag on a place) to pre-fill the search.
+  useEffect(() => {
+    if (route.params?.search != null) setQuery(route.params.search);
+  }, [route.params?.search]);
 
   useFocusEffect(
     useCallback(() => {
@@ -114,6 +127,22 @@ export default function PlacesListScreen({ navigation }) {
       : places.filter((p) => (p.category || 'other') === filter);
   if (favoritesOnly) visible = visible.filter((p) => p.favorite);
 
+  const q = query.trim().toLowerCase();
+  if (q) {
+    visible = visible.filter((p) => {
+      const haystack = [
+        p.title,
+        p.note,
+        p.locationName,
+        ...(Array.isArray(p.tags) ? p.tags : []),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }
+
   // Attach distance from the user (when known) for display and sorting.
   const withDistance = visible.map((p) => ({
     place: p,
@@ -141,6 +170,23 @@ export default function PlacesListScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <View style={styles.searchWrap}>
+        <Ionicons name="search" size={18} color={colors.muted} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search places, notes, tags…"
+          placeholderTextColor={colors.muted}
+          value={query}
+          onChangeText={setQuery}
+          returnKeyType="search"
+          autoCorrect={false}
+        />
+        {query.length > 0 && (
+          <TouchableOpacity onPress={() => setQuery('')} hitSlop={8}>
+            <Ionicons name="close-circle" size={18} color={colors.muted} />
+          </TouchableOpacity>
+        )}
+      </View>
       <CategoryChips
         selected={filter}
         onSelect={setFilter}
@@ -179,7 +225,9 @@ export default function PlacesListScreen({ navigation }) {
         }
         ListEmptyComponent={
           <Text style={styles.noneText}>
-            {favoritesOnly
+            {q
+              ? 'No places match your search.'
+              : favoritesOnly
               ? 'No favorites yet — tap the heart on a place to add one.'
               : 'No places in this category yet.'}
           </Text>
@@ -203,7 +251,26 @@ const makeStyles = (colors) => {
   const typography = makeTypography(colors);
   return StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  chips: { flexGrow: 0, paddingTop: spacing.md },
+  searchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.md,
+    height: 42,
+    borderRadius: radius.pill,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: colors.text,
+    paddingVertical: 0,
+  },
+  chips: { flexGrow: 0, paddingTop: spacing.sm },
   chipsContent: { paddingBottom: spacing.xs },
   listContent: {
     paddingHorizontal: spacing.lg,

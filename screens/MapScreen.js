@@ -36,6 +36,7 @@ export default function MapScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [baseLayer, setBaseLayer] = useState('street');
+  const [showRoute, setShowRoute] = useState(false);
 
   // Ask for location permission and grab the current position once on mount.
   useEffect(() => {
@@ -145,6 +146,14 @@ export default function MapScreen({ navigation }) {
     photo: getPhotos(p)[0],
   }));
 
+  // When the route is on, connect the visible places in the order they were
+  // saved, so the line reads as a journey.
+  const routeCoords = showRoute
+    ? [...visiblePlaces]
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+        .map((p) => ({ latitude: p.latitude, longitude: p.longitude }))
+    : [];
+
   return (
     <View style={styles.container}>
       <LeafletMap
@@ -156,6 +165,7 @@ export default function MapScreen({ navigation }) {
         markers={markers}
         baseLayer={baseLayer}
         topInset={insets.top + 56}
+        routeCoords={routeCoords}
         onLongPress={handleMapLongPress}
       />
 
@@ -200,6 +210,22 @@ export default function MapScreen({ navigation }) {
           accessibilityLabel="Show all places"
         >
           <Ionicons name="scan-outline" size={22} color={colors.accent} />
+        </TouchableOpacity>
+      )}
+
+      {/* Route toggle: connect the places as a journey path */}
+      {places.length > 1 && (
+        <TouchableOpacity
+          style={[styles.routeBtn, showRoute && styles.routeBtnActive]}
+          onPress={() => setShowRoute((v) => !v)}
+          activeOpacity={0.85}
+          accessibilityLabel="Toggle journey route"
+        >
+          <Ionicons
+            name="git-network-outline"
+            size={20}
+            color={showRoute ? colors.white : colors.accent}
+          />
         </TouchableOpacity>
       )}
 
@@ -300,6 +326,19 @@ const makeStyles = (colors) =>
     justifyContent: 'center',
     ...shadow.card,
   },
+  routeBtn: {
+    position: 'absolute',
+    right: spacing.lg,
+    bottom: spacing.xl + 174,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadow.card,
+  },
+  routeBtnActive: { backgroundColor: colors.accent },
   layersBtn: {
     position: 'absolute',
     right: spacing.lg,

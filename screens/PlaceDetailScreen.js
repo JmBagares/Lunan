@@ -235,6 +235,21 @@ export default function PlaceDetailScreen({ navigation, route }) {
 
       {!!place.note && <Text style={styles.note}>{place.note}</Text>}
 
+      {Array.isArray(place.tags) && place.tags.length > 0 && (
+        <View style={styles.tagRow}>
+          {place.tags.map((t) => (
+            <TouchableOpacity
+              key={t}
+              style={styles.tagChip}
+              onPress={() => navigation.navigate('PlacesList', { search: t })}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.tagChipText}>#{t}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
       <Text style={styles.sectionLabel}>ON THE MAP</Text>
       <View style={styles.mapCard}>
         <LeafletMap
@@ -332,6 +347,20 @@ const makeStyles = (colors) => {
   },
 
   note: { ...typography.body, marginTop: spacing.md },
+
+  tagRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  tagChip: {
+    backgroundColor: colors.accentSoft,
+    borderRadius: radius.pill,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  tagChipText: { fontSize: 13, fontWeight: '700', color: colors.accentDark },
 
   sectionLabel: {
     ...typography.label,
